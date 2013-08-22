@@ -246,7 +246,7 @@ c      call psieval(tau,rho,D,tanpsi,kperm,compress,h,u,mbar,psi)
          sourcetaudx = -(u/sqrt(u**2+v**2))*tau*dx/rho
          sourcetaudx = sourcetaudx - u*(1.0-mbar)*2.0*mu*dx/(rho*h)
       else
-         sourcetaudx = -tau*dx/rho
+         sourcetaudx = 0.0
       endif
 
       if (ixy.eq.1.and.(.not.wallprob)) then
@@ -260,10 +260,10 @@ c      call psieval(tau,rho,D,tanpsi,kperm,compress,h,u,mbar,psi)
       else
          if ((dabs(del(2)-source2dx).ge.dabs(dx*tauL/rhoL)).and.
      &         (dabs(del(2)-source2dx).ge.dabs(dx*tauR/rhoR))) then
-c            del(2)=dsign(dabs(dabs(del(2)-source2dx)
-c     &                   -dabs(dx*tau/rho)),del(2)-source2dx)
+            del(2)=dsign(dabs(dabs(del(2)-source2dx)
+     &                   -dabs(dx*tau/rho)),del(2)-source2dx)
 
-            del(2) = del(2) -source2dx - sourcetaudx
+c            del(2) = del(2) -source2dx - sourcetaudx
          else
             del(0)=0.d0
             del(1)=0.d0
