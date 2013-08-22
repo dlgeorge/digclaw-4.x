@@ -61,10 +61,10 @@ c     # check for NANs in solution:
             if (p_initialized.eq.0.and.vnorm.le.0.d0) cycle
 
             if (vnorm.gt.0.d0) then
-               hvnorm = dmax1(0.d0,hvnorm - dt*tau/rho)
-               hvnorm = hvnorm*dexp(-(1.d0-m)*2.0*mu*dt/(rho*h**2))
-               hu = hvnorm*u/vnorm
-               hv = hvnorm*v/vnorm
+               !hvnorm = dmax1(0.d0,hvnorm - dt*tau/rho)
+               !hvnorm = hvnorm*dexp(-(1.d0-m)*2.0*mu*dt/(rho*h**2))
+               !hu = hvnorm*u/vnorm
+               !hv = hvnorm*v/vnorm
             endif
 
             call admissibleq(h,hu,hv,hm,p,u,v,m,theta)
@@ -88,7 +88,7 @@ c     # check for NANs in solution:
             p = p_eq + (p-p_eq)*dexp(krate*dt)
 
             !integrate shear-induced dilatancy
-            p = p - dt*3.0*vnorm*tanpsi/(h*compress)
+            !p = p - dt*3.0*vnorm*tanpsi/(h*compress)
 
 
             call admissibleq(h,hu,hv,hm,p,u,v,m,theta)

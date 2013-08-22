@@ -52,6 +52,7 @@ c-----------------------------------------------------------------------
       double precision raremin,raremax,rare1st,rare2st,sdelta
       double precision source2dxL,source2dxR
       double precision gammaL,gammaR,theta1,theta2,theta3
+      double precision tau,sourcetaudx
       logical sonic,rare1,rare2
       logical rarecorrectortest,rarecorrector
 
@@ -95,6 +96,7 @@ c-----------------------------------------------------------------------
 
 
       rho = 0.5d0*(rhoL + rhoR)
+      tau = 0.5d0*(tauL + tauR)
       theta = 0.5d0*(thetaL + thetaR)
       gamma = 0.25*(rho_f + 3.0*rho)/rho
       gammaL = 0.25*(rho_f + 3.0*rhoL)/rhoL
@@ -234,12 +236,18 @@ c     !find bounds in case of critical state resonance, or negative states
       del(3) = pR - pL - gamma*rho*gmod*deldelh
       del(4) = -gamma*rho*gmod*u*(hR-hL) + gamma*rho*gmod*del(1)
      &         + u*(pR-pL)
-
+      del(3) = del(3) + dx*3.0*sqrt(u**2 + v**2)*tanpsi/(h*compress)
 
 *     !determine the source term
 c      call psieval(tau,rho,D,tanpsi,kperm,compress,h,u,mbar,psi)
       source2dxL = source2dx
       source2dxR = source2dx
+      if (sqrt(u**2 + v**2).gt.0.0) then
+         sourcetaudx = -(u/sqrt(u**2+v**2))*tau*dx/rho
+         sourcetaudx = sourcetaudx - u*(1.0-mbar)*2.0*mu*dx/(rho*h)
+      else
+         sourcetaudx = -tau*dx/rho
+      endif
 
       if (ixy.eq.1.and.(.not.wallprob)) then
          source2dxL =source2dxL + dx*hL*grav*dsin(thetaL)
@@ -248,14 +256,14 @@ c      call psieval(tau,rho,D,tanpsi,kperm,compress,h,u,mbar,psi)
       endif
 
       if (dabs(uR**2+uL**2).gt.veltol2) then
-         del(2) = del(2) -source2dx
+         del(2) = del(2) - source2dx - sourcetaudx
       else
          if ((dabs(del(2)-source2dx).ge.dabs(dx*tauL/rhoL)).and.
      &         (dabs(del(2)-source2dx).ge.dabs(dx*tauR/rhoR))) then
 c            del(2)=dsign(dabs(dabs(del(2)-source2dx)
 c     &                   -dabs(dx*tau/rho)),del(2)-source2dx)
 
-            del(2) = del(2) -source2dx
+            del(2) = del(2) -source2dx - sourcetaudx
          else
             del(0)=0.d0
             del(1)=0.d0
