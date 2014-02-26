@@ -220,6 +220,7 @@ contains
       phi = pmax - plo
       if (p.lt.plo) then
          p = dmax1(0.d0,p)
+         !p = dmax1(-5.0*pmax,p)
          !p = (p**2 + plo**2)/(2.d0*plo)
       elseif (p.gt.phi) then
          p = dmin1(pmax,p)
@@ -411,7 +412,7 @@ contains
             pcritL = (rho*h_l*gmod - rho*forcemagL/(dx*tan(phiR)))/(rho_f*gmod*h_l)
             pcrit = max(pcritR,pcritL)
             init_pmin_ratio = min(init_pmin_ratio,pcrit)
-            init_pmin_ratio = max(init_pmin_ratio,0.d0)
+            !init_pmin_ratio = max(init_pmin_ratio,0.d0)
 
             !repeat for y-Riemann problems
             h_r = q(i,j,1)
@@ -446,7 +447,7 @@ contains
             pcritL = (rho*h_l*gmod - rho*forcemag/(dy*tan(phiR)))/(rho_f*gmod*h_l)
             pcrit = max(pcritR,pcritL)
             init_pmin_ratio = min(init_pmin_ratio,pcrit)
-            init_pmin_ratio = max(init_pmin_ratio,0.d0)
+            !init_pmin_ratio = max(init_pmin_ratio,0.d0)
 
 
          enddo

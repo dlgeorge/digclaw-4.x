@@ -142,7 +142,7 @@ c=============== Pressure initialization for Mobilization Modeling======
          enddo
       elseif (init_ptype.eq.-1) then
          do j=1-mbc,my+mbc
-               q(i,j,5) = 0.0
+               q(i,j,5) = -2.0*rho_f*gmod*q(i,j,1)
          enddo
       endif
       p_initialized = 1
