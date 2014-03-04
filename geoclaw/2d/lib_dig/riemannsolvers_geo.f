@@ -42,6 +42,8 @@ c-----------------------------------------------------------------------
       double precision det1,det2,det3,detR
       double precision R(0:2,1:3),A(3,3),del(0:4)
       double precision beta(3)
+      double precision delp(3)
+      double precision rp(3,3)
       double precision rho,rhoL,rhoR,tauL,tauR,tau
       double precision kappa,kperm,compress,tanpsi,D,SN,sigbed,pm
       double precision theta,gamma,eps
@@ -319,12 +321,29 @@ c      del(4) = del(4) - 0.5d0*dx*psi(4)
       fw(3,2) = hvR*uR-hvL*uL -fw(3,1) -fw(3,3)
 
       !fwaves for delta p
-      fw(5,1) = fw(1,1)*gammaL*rhoL*grav*dcos(theta1)
-      fw(5,3) = fw(1,3)*gammaR*rhoR*grav*dcos(theta3)
-      fw(5,2) = del(4) - fw(5,3) - fw(5,1)
+      fw(5,1) = beta(1)*R(0,1)*gammaL*rhoL*grav*dcos(theta1)
+      fw(5,3) = beta(3)*R(0,3)*gammaR*rhoR*grav*dcos(theta3)
+      fw(5,2) = pR-pL - fw(5,1) - fw(5,3)
+      fw(5,2) = fw(5,2) - beta(2)*R(0,2)*gammaL*rhoL*grav*dcos(theta1)
+      fw(5,2) = fw(5,2) - gamma*rho*
       !fw(5,2) = sw(2)*(del(3)-grav*(gammaL*rhoL*dcos(theta1)*beta(1)
       !&      +       gammaR*rhoR*dcos(theta3)*beta(3)))
 
+      !determine waves for p
+
+      hLstar=hL
+      hRstar=hR
+
+      do mw=1,mwaves
+         if (s(mw).lt.0.d0) then
+               hLstar= hLstar + beta(mw)*r(1,mw)
+         endif
+      enddo
+      do mw=mwaves,1,-1
+         if (lambda(mw).gt.0.d0) then
+            hRstar= hRstar - beta(mw)*r(1,mw)
+         endif
+      enddo
 
       return
       end !subroutine riemann_dig2_aug_sswave_ez
