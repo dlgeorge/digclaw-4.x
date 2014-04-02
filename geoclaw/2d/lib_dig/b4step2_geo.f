@@ -43,7 +43,7 @@ c     # set hu = hv = 0 in all these cells
            if (bed_normal.eq.1) theta=aux(i,j,i_theta)
            call admissibleq(q(i,j,1),q(i,j,2),q(i,j,3),q(i,j,4),q(i,j,5)
      &                     ,u,v,sv,theta)
-           do m = 5,meqn
+           do m = 6,meqn
                if (q(i,j,m).lt.0.0) q(i,j,m)=0.0
            enddo
 
