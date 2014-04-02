@@ -48,7 +48,7 @@ c
       !local
       integer m,i,mw,maxiter,mhu,nhv,mcapa,icom,jcom
       double precision dtcom,dxcom,dycom,tcom
-      double precision wall(3),fw(5,3),sw(3),wave(5,3)
+      double precision wall(3),fw(6,3),sw(3),wave(6,3)
       double precision lamL(3),lamR(3),beta(3)
       logical entropy(3)
       logical rare1,rare2,wallprob,drystate
@@ -62,6 +62,7 @@ c
       double precision theta,thetaL,thetaR
       double precision h1M,h2M,hu1M,hu2M,u1M,u2M,heR,heL
       double precision sE1,sE2
+      double precision aL,aR
 
 
 
@@ -153,6 +154,14 @@ c        !set normal direction
          bR = auxl(i,1)
          phi_bedL = auxr(i-1,i_phi)
          phi_bedR = auxl(i,i_phi)
+         if (meqn.gt.5) then
+            aL = qr(i,6)
+            aR = ql(i-1,6)
+         else
+            aL = 0.0
+            aR = 0.0
+         endif
+
 
          !test for wall problem vs. inundation problem
          do mw=1,mwaves
@@ -182,6 +191,7 @@ c                bR=hstartest+bL
                vR=vL
                mR=mL
                pR=pL
+               aR=aL
                !thetaL = 0.d0
                !thetaR = 0.d0
             !elseif (hL+bL.lt.bR) then
@@ -209,6 +219,7 @@ c               bL=hstartest+bR
                uL=-uR
                vL=vR
                pL=pR
+               aL=aR
                !thetaL = 0.d0
                !thetaR = 0.d0
             !elseif (hR+bR.lt.bL) then
@@ -266,7 +277,7 @@ c     &         theta,gamma,eps,dx,sw,fw,wave)
          call riemann_dig2_aug_sswave_ez(ixy,meqn,mwaves,hL,hR,huL,huR,
      &         hvL,hvR,hmL,hmR,pL,pR,bL,bR,uL,uR,vL,vR,mL,mR,
      &        thetaL,thetaR,phi_bedL,phi_bedR,dx,sw,fw,wave,wallprob,fs,
-     &         fail)
+     &         fail,aL,aR)
 
 
 c         call riemann_aug_JCP(1,3,3,hL,hR,huL,
@@ -336,8 +347,9 @@ c=======================================================================
             fwave(i,1,mw)=fw(1,mw)
             fwave(i,mhu,mw)=fw(2,mw)
             fwave(i,nhv,mw)=fw(3,mw)
-            fwave(i,4,mw) = fw(4,mw)
-            fwave(i,5,mw) = fw(5,mw)
+            do m = 4,meqn
+               fwave(i,m,mw) = fw(m,mw)
+            enddo
          enddo
 
 
