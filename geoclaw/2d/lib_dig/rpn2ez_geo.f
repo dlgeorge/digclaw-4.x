@@ -155,8 +155,8 @@ c        !set normal direction
          phi_bedL = auxr(i-1,i_phi)
          phi_bedR = auxl(i,i_phi)
          if (meqn.gt.5) then
-            aL = qr(i,6)
-            aR = ql(i-1,6)
+            aL = qr(i-1,6)
+            aR = ql(i,6)
          else
             aL = 0.0
             aR = 0.0

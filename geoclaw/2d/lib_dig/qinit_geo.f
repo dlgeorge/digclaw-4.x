@@ -107,7 +107,7 @@ c
                   q(i,j,4) = q(i,j,1)*q(i,j,4)
                endif
                if (q(i,j,1).le.drytolerance) then
-                  do m = 1,meqn
+                  do m = 1,5
                      q(i,j,m) = 0.d0
                   enddo
                endif

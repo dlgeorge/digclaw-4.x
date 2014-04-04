@@ -124,7 +124,7 @@ c-----------------------------------------------------------------------
       sw(1)= min(sw(1),s2m) !Modified Einfeldt speed
       sw(3)= max(sw(3),s1m) !Modified Einfeldt speed
       sw(2) = 0.5d0*(sw(3)+sw(1))
-
+      !sw(2) = uhat
       hstarHLL = max((huL-huR+sE2*hR-sE1*hL)/(sE2-sE1),0.d0) ! middle state in an HLL solve
 c     !determine the middle entropy corrector wave------------------------
       rarecorrectortest = .false.
@@ -322,7 +322,7 @@ c      del(4) = del(4) - 0.5d0*dx*psi(4)
 
       if (meqn.gt.5) then
          fw(6,1) = 0.0
-         fw(6,2) = sw(2)*(aR-aL)
+         fw(6,2) = uhat*(aR-aL)
          fw(6,3) = 0.0
       endif
 
