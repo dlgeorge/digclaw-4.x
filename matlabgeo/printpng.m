@@ -8,5 +8,5 @@ function printpng(fname)
 %
 % See also MAKEFRAMEGIF, PRINTJPG, and the unix command CONVERT.
 
-set(gcf,'paperunits','inches','paperposition',[0 0 16 10.667])
+set(gcf,'paperunits','inches','paperposition',[0 0 12 8])
 eval(['print -dpng ' fname]);
