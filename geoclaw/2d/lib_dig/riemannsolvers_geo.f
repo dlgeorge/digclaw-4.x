@@ -50,7 +50,7 @@ c-----------------------------------------------------------------------
       double precision s1s2bar,s1s2tilde,hbar,source2dx,veltol1,veltol2
       double precision hstarHLL,deldelh,drytol,gmod,geps,tausource
       double precision raremin,raremax,rare1st,rare2st,sdelta
-      double precision gammaL,gammaR,theta1,theta2,theta3,vnorm
+      double precision gammaL,gammaR,theta1,theta2,theta3,vnorm,Fx
       logical sonic,rare1,rare2
       logical rarecorrectortest,rarecorrector
 
@@ -242,26 +242,20 @@ c     !find bounds in case of critical state resonance, or negative states
          source2dx = source2dx + dx*hbar*grav*dsin(theta)
       endif
 
+      Fx = del(2) - source2dx
       vnorm = sqrt(u**2 + v**2)
-      if (fs<=0.0.and.vnorm>0.0) then
+      if (vnorm>0.0) then
          tausource = - dx*0.5*(tauL/rhoL + tauR/rhoR)*u/vnorm
-      elseif (fs>1.0) then
-         tausource = del(2) - source2dx
+      elseif (abs(Fx)>=max(abs(dx*tauL/rhoL),abs(dx*tauR/rhoR)) ) then
+         tausource = sign(max(abs(dx*tauL/rhoL),abs(dx*tauR/rhoR)),Fx)
+      else
+         tausource = Fx
          del(1) = 0.0
          del(0) = 0.0
          del(4) = 0.0
-      elseif (fs<=1.0.and.vnorm<=0.0) then
-         tausource = (del(2) - source2dx)*fs
-      else
-         tausource = 0.0
       endif
 
       del(2) = del(2) - source2dx  - tausource
-      !del(4) = del(4) + dx*3.0*vnorm*tanpsi/(h*compress)
-
-c      del(1) = del(1) - 0.5d0*dx*psi(1)
-c      del(2) = del(2) - dx*psi(2)
-c      del(4) = del(4) - 0.5d0*dx*psi(4)
 
       !--------theta--------------------
       if (sw(1).ge.0.d0) then
