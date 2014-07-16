@@ -29,10 +29,10 @@ module digclaw_module
     integer, parameter ::  i_dig    = 4 !Start of digclaw aux variables
     integer, parameter ::  i_phi    = i_dig
     integer, parameter ::  i_theta  = i_dig + 1
-    integer, parameter ::  i_fs_x   = i_dig + 2
-    integer, parameter ::  i_fs_y   = i_dig + 3
-    integer, parameter ::  i_fail_x = i_dig + 4
-    integer, parameter ::  i_fail_y = i_dig + 5
+    integer, parameter ::  i_fs_x   = i_dig + 2 !not currently used
+    integer, parameter ::  i_fs_y   = i_dig + 3 !not currently used
+    integer, parameter ::  i_fail_x = i_dig + 4 !not currently used
+    integer, parameter ::  i_fail_y = i_dig + 5 !not currently used
     integer, parameter ::  DIG_PARM_UNIT = 78
 
 

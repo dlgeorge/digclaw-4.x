@@ -182,9 +182,7 @@ c=============== Pressure initialization for Mobilization Modeling======
      &                       q(i,j,4),q(i,j,5),u,v,sv,aux(i,j,i_theta))
          enddo
       enddo
-c===============set factor of safety====================================
-      call calc_fs(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,
-     &                     q,maux,aux)
+
 
       return
       end

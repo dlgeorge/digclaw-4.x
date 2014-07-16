@@ -57,9 +57,6 @@ c      write(26,*) 'B4STEP2: t, num_dtopo: ', t,num_dtopo
      &      minleveldtopo(i),maxleveldtopo(i),topoaltered(i))
       enddo
 
-c======find factor of safety ratios===================================
-      call calc_fs(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,
-     &                     q,maux,aux)
 
 c=============mobilization =============================================
       !write(*,*) 'b4step2, t:',t,init_pmin_ratio
