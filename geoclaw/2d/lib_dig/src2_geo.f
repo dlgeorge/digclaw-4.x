@@ -124,6 +124,7 @@ c            !vnorm = dsqrt(u**2 + v**2)
       enddo
 
       !diffusion?
+      if (.false.) then
       do i=1,mx
          do j=1,my
          if (q(i,j,1).le.drytolerance) cycle
@@ -146,6 +147,7 @@ c            !vnorm = dsqrt(u**2 + v**2)
             q(i,j,5) = aux(i,j,8)*q(i,j,1)
          enddo
       enddo
+      endif
 
 *     ! Manning friction------------------------------------------------
       if (coeffmanning.gt.0.d0.and.frictiondepth.gt.0.d0) then
