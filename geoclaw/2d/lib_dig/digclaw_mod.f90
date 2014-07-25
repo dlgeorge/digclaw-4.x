@@ -631,7 +631,6 @@ end subroutine calc_fs
             F = sqrt(Fx**2 + Fy**2)
             forcemag = F
             pcrit = (rho*h*gmod - rho*forcemag/(tan(phi)))/(rho_f*gmod*h)
-            write(*,*) 'pcrit',pcrit
             init_pmin_ratio = min(init_pmin_ratio,pcrit)
          enddo
       enddo
