@@ -572,15 +572,10 @@ end subroutine calc_fs
       integer :: maxmx,maxmy,mx,my,mbc,meqn,maux
 
       !Locals
-      double precision :: forcemag,pcrit,rho,h,dry_tol,gmod
-      double precision :: forcemagL,forcemagR,pcritL,pcritR
-      double precision :: hL,hR,huL,huR,hvL,hvR,hmL,hmR,pL,pR
-      double precision :: vR,vL,uR,uL,mL,mR,rhoR,rhoL,tauR,tauL
-      double precision :: bL,bR,phiL,phiR,thetaL,thetaR,theta
-      double precision :: kappa,S,tanpsi,D,sigbed,kperm,compress,pm
-      double precision :: Fx,Fy,F,vRnorm,vLnorm
-      double precision :: htL,htR,hlL,hlR,btL,btR,blL,blR
-      double precision :: hhi,hlo,bhi,blo
+      double precision :: forcemag,pcrit,rho,dry_tol,gmod
+      double precision :: Fx,Fy,F,phi,theta,tanpsi
+      double precision :: h,hT,hB,hR,hL,b,bL,bR,bT,bB
+
       logical :: dry
       integer :: i,j,ii,jj
 
@@ -596,12 +591,12 @@ end subroutine calc_fs
       tanpsi = 0.0 !c1*(m0 - m_crit)
 
 
-      do i=2-mbc,mx+mbc
+      do i=2-mbc,mx+mbc-1
          do j=2-mbc,my+mbc-1
             !note: for edge valued aux, aux(i,..) is at i-1/2.
 
             dry = .false.
-            do ii = -1,0
+            do ii = -1,1
                do jj = -1,1
                   if (q(i+ii,j+jj,1)<=dry_tol) then
                      dry = .true.
@@ -611,123 +606,36 @@ end subroutine calc_fs
             if (dry) then
                cycle
             endif
-            hR = q(i,j,1)
+            h  = q(i,j,1)
+            hR = q(i+1,j,1)
             hL = q(i-1,j,1)
-            huL = q(i-1,j,2)
-            huR = q(i,j,2)
-            hvL = q(i-1,j,3)
-            hvR = q(i,j,3)
-            hmL = q(i-1,j,4)
-            hmR = q(i,j,4)
-            pL = q(i-1,j,5)
-            pR = q(i,j,5)
+            hT =  q(i,j+1,1)
+            hB = q(i,j-1,1)
 
-            htL = q(i-1,j+1,1)
-            htR = q(i,j+1,1)
-            hlL = q(i-1,j-1,1)
-            hlR = q(i,j-1,1)
-
-            btL = aux(i-1,j+1,1)
-            btR = aux(i,j+1,1)
-            blL = aux(i-1,j-1,1)
-            blR = aux(i,j-1,1)
-
-            bR = aux(i,j,1)
+            b   = aux(i,j,1)
+            bR = aux(i+1,j,1)
             bL = aux(i-1,j,1)
-            phiL = aux(i-1,j,i_phi)
-            phiR = aux(i,j,i_phi)
+            bT = aux(i,j+1,1)
+            bB = aux(i,j-1,1)
+            phi = aux(i,j,i_phi)
+
             if (bed_normal.eq.1) then
-               thetaR = aux(i,j,i_theta)
-               thetaL = aux(i-1,j,i_theta)
-               gmod = grav*cos(0.5d0*(thetaL+thetaR))
+               theta = aux(i,j,i_theta)
+               gmod = grav*cos(theta)
             else
-               thetaL = 0.d0
-               thetaR = 0.d0
+               theta = 0.d0
             endif
 
-            theta = 0.5*(thetaL + thetaR)
-            h = 0.5*(hL + hR)
-            Fx = -0.5*gmod*(hR**2 - hL**2)/dx + grav*h*sin(theta) - gmod*h*(bR-bL)/dx
-
-            hhi = 0.25*(htR+htL+hL+hR)
-            hlo = 0.25*(hlR+hlL+hL+hR)
-            bhi = 0.25*(btR+btL+bL+bR)
-            blo = 0.25*(blR+blL+bL+bR)
-
-            Fy = -0.5*gmod*(hhi**2 - hlo**2)/dy - gmod*h*(bhi-blo)/dy
+            Fx = -gmod*(hR**2 - hL**2)/dx + grav*h*sin(theta) - 2.0*gmod*h*(bR-bL)/dx
+            Fy = -gmod*(hT**2 - hB**2)/dy - 2.0*gmod*h*(bT-bB)/dy
             F = sqrt(Fx**2 + Fy**2)
-            forcemag = max(abs(sqrt((Fx*dx)**2 + (Fy*dy)**2) - 0.0*dx/rho),0.0)
-            pcritR = (rho*hR*gmod - rho*forcemag/(dx*tan(phiR)))/(rho_f*gmod*hR)
-            pcritL = (rho*hL*gmod - rho*forcemag/(dx*tan(phiL)))/(rho_f*gmod*hL)
-            pcrit = max(pcritR,pcritL)
+            forcemag = F
+            pcrit = (rho*h*gmod - rho*forcemag/(tan(phi)))/(rho_f*gmod*h)
+            write(*,*) 'pcrit',pcrit
             init_pmin_ratio = min(init_pmin_ratio,pcrit)
          enddo
       enddo
 
-      do j=2-mbc,my+mbc
-         do i=2-mbc,mx+mbc-1
-            dry = .false.
-            do ii = -1,1
-               do jj = -1,0
-                  if (q(i+ii,j+jj,1)<=dry_tol) then
-                     dry = .true.
-                  endif
-               enddo
-            enddo
-            if (dry) then
-               cycle
-            endif
-            hR = q(i,j,1)
-            hL = q(i,j-1,1)
-            huL = q(i,j-1,2)
-            huR = q(i,j,2)
-            hvL = q(i,j-1,3)
-            hvR = q(i,j,3)
-            hmL = q(i,j-1,4)
-            hmR = q(i,j,4)
-            pL = q(i,j-1,5)
-            pR = q(i,j,5)
-
-            htL = q(i+1,j-1,1)
-            htR = q(i+1,j,1)
-            hlL = q(i-1,j-1,1)
-            hlR = q(i-1,j,1)
-
-            btL = aux(i+1,j-1,1)
-            btR = aux(i+1,j,1)
-            blL = aux(i-1,j-1,1)
-            blR = aux(i-1,j,1)
-
-            bR = aux(i,j,1)
-            bL = aux(i,j-1,1)
-            phiL = aux(i,j-1,i_phi)
-            phiR = aux(i,j,i_phi)
-            if (bed_normal.eq.1) then
-               thetaR = aux(i,j,i_theta)
-               thetaL = aux(i,j-1,i_theta)
-               gmod = grav*dcos(0.5d0*(thetaL+thetaR))
-            else
-               thetaL = 0.d0
-               thetaR = 0.d0
-            endif
-
-            theta = 0.5*(thetaL + thetaR)
-            h = 0.5*(hL + hR)
-            Fy = -0.5*gmod*(hR**2 - hL**2)/dy - gmod*h*(bR-bL)/dy
-
-            hhi = 0.25*(htR+htL+hL+hR)
-            hlo = 0.25*(hlR+hlL+hL+hR)
-            bhi = 0.25*(btR+btL+bL+bR)
-            blo = 0.25*(blR+blL+bL+bR)
-            Fx = -0.5*gmod*(hhi**2 - hlo**2)/dx - gmod*h*(bhi-blo)/dx + grav*h*sin(theta)
-            F = sqrt(Fx**2 + Fy**2)
-            forcemag = max(abs(sqrt((Fx*dx)**2 + (Fy*dy)**2) - 0.0*dx/rho),0.0)
-            pcritR = (rho*hR*gmod - rho*forcemag/(dx*tan(phiR)))/(rho_f*gmod*hR)
-            pcritL = (rho*hL*gmod - rho*forcemag/(dx*tan(phiL)))/(rho_f*gmod*hL)
-            pcrit = max(pcritR,pcritL)
-            init_pmin_ratio = min(init_pmin_ratio,pcrit)
-         enddo
-      enddo
 
       write(*,*) 'init_pmin_ratio:',init_pmin_ratio
    end subroutine calc_pmin
