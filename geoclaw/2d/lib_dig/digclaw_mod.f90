@@ -297,7 +297,7 @@ contains
       !   tanphi = tanphi + 0.38*mu*shear/(shear + 0.005*sigbedc)
       !endif
 
-      tau = dmax1(0.d0,sigbed*dtan(phi_bed + datan(tanpsi)))
+      tau = dmax1(0.d0,sigbed*dtan(phi_bed + datan(tanpsi))) + 2.e6
       !tau = (grav/gmod)*dmax1(0.d0,sigbed*tanphi)
       !kappa: earth pressure coefficient
       !if (phi_int.eq.phi_bed) then
@@ -613,9 +613,7 @@ end subroutine calc_fs
             if (h_l.gt.dry_tol.and.h_r.gt.dry_tol) then
                h = 0.5d0*(h_r + h_l)
                !determine pressure min ratio
-               forcemagL = abs(-grav*h_l*dsin(thetaL)*dx + gmod*(b_r-b_l)*h + 0.5d0*gmod*(h_r**2 - h_l**2))
-               forcemagR = abs(-grav*h_r*dsin(thetaR)*dx + gmod*(b_r-b_l)*h + 0.5d0*gmod*(h_r**2 - h_l**2))
-               forcemag = 0.5*(forcemagL + forcemagR)
+               forcemag = abs(gmod*(b_r-b_l)*h + 0.5d0*gmod*(h_r**2 - h_l**2))
                pcritR = (rho*h_r*gmod - rho*forcemag/(dx*tan(phiR)))/(rho_f*gmod*h_r)
                pcritL = (rho*h_l*gmod - rho*forcemag/(dx*tan(phiL)))/(rho_f*gmod*h_l)
                pcrit = max(pcritR,pcritL)
@@ -657,12 +655,17 @@ end subroutine calc_fs
             if (h_l.gt.dry_tol.and.h_r.gt.dry_tol) then
                h = 0.5d0*(h_r + h_l)
                !determine pressure min ratio
-               forcemagR = abs(gmod*(b_r-b_l)*h_r + 0.5d0*gmod*(h_r**2 - h_l**2))
-               forcemagL = abs(gmod*(b_r-b_l)*h_l + 0.5d0*gmod*(h_r**2 - h_l**2))
-               forcemag = 0.5*(forcemagR + forcemagL)
+               forcemag = abs(gmod*(b_r-b_l)*h + 0.5d0*gmod*(h_r**2 - h_l**2))
                pcritR = (rho*h_r*gmod - rho*forcemag/(dy*tan(phiR)))/(rho_f*gmod*h_r)
                pcritL = (rho*h_l*gmod - rho*forcemag/(dy*tan(phiL)))/(rho_f*gmod*h_l)
                pcrit = max(pcritR,pcritL)
+               if (pcrit<-6.) then
+                  write(*,*) '-----------------------------------------'
+                  write(*,*) 'pcrit',pcrit
+                  write(*,*) 'hr,hl,br,bl:',h_r,h_l,b_r,b_l
+                  write(*,*) 'forcemag,gmod,rho',forcemag,gmod,rho
+                  write(*,*) 'dy,tan(phiR)', dy,tan(phiR)
+               endif
             elseif (h_r.gt.dry_tol) then
                h = 0.5*h_r
                forcemag = abs(gmod*(b_r-b_l)*h + 0.5d0*gmod*(h_r**2 - h_l**2))
