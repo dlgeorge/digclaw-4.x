@@ -230,7 +230,7 @@ contains
       plo = rho_f*dry_tol*gmod*dry_tol
       phi = pmax - plo
       if (p.lt.plo) then
-         p = dmax1(0.d0,p)
+         p = dmax1(-rho*h*gmod,p)
          !p = dmax1(-5.0*pmax,p)
          !p = (p**2 + plo**2)/(2.d0*plo)
       elseif (p.gt.phi) then
@@ -268,6 +268,7 @@ contains
       rho = rho_s*m + rho_f*(1.d0-m)
       shear = 2.0*vnorm/hbounded
       sigbed = dmax1(0.d0,rho*gmod*h - p)
+      !sigbed = min(sigbed,rho*gmod*h)
       sigbedc = rho_s*(shear*delta)**2 + sigbed
 
       if (sigbedc.gt.0.0) then
