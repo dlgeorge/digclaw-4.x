@@ -16,8 +16,8 @@
 
       !local
       double precision :: gmod,h,hu,hv,hm,u,v,m,p,phi,kappa,S,rho,tanpsi
-      double precision :: D,tau,sigbed,kperm,compress,pm,coeff,tol
-      double precision :: zeta,p_hydro,p_litho,p_eq,krate,gamma,dgamma
+      double precision :: D,tau,sigbed,kperm,compress,pm,coeff,tol,shear
+      double precision :: zeta,p_hydro,sigebar,p_eq,krate,gamma,dgamma
       double precision :: vnorm,hvnorm,theta,dtheta,w,taucf
       integer :: i,j,ii,jj,icount
 
@@ -81,14 +81,20 @@
             vnorm = sqrt(u**2 + v**2)
 
             !integrate shear-induced dilatancy
-            !p = p - dt*3.0*vnorm*tanpsi/(h*compress)
+            sigebar = rho*gmod*h - p + sigma_0
+            shear = 2.0*vnorm/h
+            krate = 1.5*shear*m*tanpsi/alpha
+            sigebar = sigebar*exp(krate*dt)
+            p = rho*gmod*h + sigma_0 - sigebar
+
+            call admissibleq(h,hu,hv,hm,p,u,v,m,theta)
+            call auxeval(h,u,v,m,p,phi,theta,kappa,S,rho,tanpsi,D,tau,sigbed,kperm,compress,pm)
 
             !integrate pressure relaxation
             zeta = 3.d0/(compress*h*2.0)  + (rho-rho_f)*rho_f*gmod/(4.d0*rho)
-
             krate=-zeta*2.0*kperm/(h*max(mu,1.d-16))
             p_hydro = h*rho_f*gmod
-            p_litho = (rho_s*m + (1.d0-m)*rho_f)*gmod*h
+
 
             if (abs(compress*krate)>0.0) then
                p_eq = p_hydro + 3.0*vnorm*tanpsi/(compress*h*krate)
@@ -97,6 +103,7 @@
             endif
             !p_eq = max(p_eq,0.0)
             !p_eq = min(p_eq,p_litho)
+            p_eq = p_hydro
             p = p_eq + (p-p_eq)*exp(krate*dt)
 
             call admissibleq(h,hu,hv,hm,p,u,v,m,theta)
