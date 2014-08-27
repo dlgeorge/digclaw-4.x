@@ -116,9 +116,9 @@ c-----------------------------------------------------------------------
       endif
 
       if (hR>=drytol) then
-         gammaL = pR/(rhoR*geps*hR)
+         gammaR = pR/(rhoR*geps*hR)
       else
-         gammaL = 0.0
+         gammaR = 0.0
       endif
       gamma = 0.5*(gammaL+gammaR)
 
