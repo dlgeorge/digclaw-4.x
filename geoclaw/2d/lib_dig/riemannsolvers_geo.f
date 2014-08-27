@@ -109,6 +109,19 @@ c-----------------------------------------------------------------------
       gmod = grav*dcos(theta)
       geps = gmod*eps
 
+      if (hL>=drytol) then
+         gammaL = pL/(rhoL*geps*hL)
+      else
+         gammaL = 0.0
+      endif
+
+      if (hR>=drytol) then
+         gammaL = pR/(rhoR*geps*hR)
+      else
+         gammaL = 0.0
+      endif
+      gamma = 0.5*(gammaL+gammaR)
+
       !determine wave speeds
       sL=uL-dsqrt(geps*hL) ! 1 wave speed of left state
       sR=uR+dsqrt(geps*hR) ! 2 wave speed of right state
