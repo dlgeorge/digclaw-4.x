@@ -284,7 +284,6 @@ contains
       pm = min(1.0,pm)
       kperm = kappita*(1.0+ 10.0*pm)*exp(-(m-0.60)/(0.04))
 
-
       !kperm = kperm + 1.0*pm*kappita
       !write(*,*) 'kperm:',kperm,m,10.0*pm*kappita
 
@@ -313,10 +312,6 @@ contains
 
       tau = dmax1(0.d0,sigbed*dtan(phi_bed + datan(tanpsi)))
 
-      if (p_initialized.eq.0) then
-         !tau = tau + rho*gmod*h*max(0.0,grad_eta_max*tan(phi_bed)-tan(phi_bed))
-      !   tau = tau + pm
-      endif
       !tau = (grav/gmod)*dmax1(0.d0,sigbed*tanphi)
       !kappa: earth pressure coefficient
       !if (phi_int.eq.phi_bed) then
