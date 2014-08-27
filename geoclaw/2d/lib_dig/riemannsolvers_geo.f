@@ -110,15 +110,15 @@ c-----------------------------------------------------------------------
       geps = gmod*eps
 
       if (hL>=drytol) then
-         gammaL = pL/(rhoL*geps*hL)
+         gammaL = pL/(rhoL*grav*cos(thetaL)*hL)
       else
-         gammaL = 0.0
+         gammaL = pR/(rhoR*grav*cos(thetaR)*hR)
       endif
 
       if (hR>=drytol) then
-         gammaR = pR/(rhoR*geps*hR)
+         gammaR = pR/(rhoR*grav*cos(thetaR)*hR)
       else
-         gammaR = 0.0
+         gammaR = pL/(rhoL*grav*cos(thetaL)*hL)
       endif
       gamma = 0.5*(gammaL+gammaR)
 
