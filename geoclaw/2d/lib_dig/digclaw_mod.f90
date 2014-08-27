@@ -262,7 +262,7 @@ contains
 
       if (h.lt.drytolerance) return
 
-      hbounded = h !max(h,delta)
+      hbounded = h !max(h,.05)
       gmod=grav
       if (bed_normal.eq.1) gmod=grav*dcos(theta)
       vnorm = dsqrt(u**2 + v**2)
@@ -279,7 +279,15 @@ contains
       !From Boyer et. al
       !S = 0.0
       m_eqn = m_crit/(1.d0 + sqrt(S))
+
       tanpsi = c1*(m-m_eqn)*tanh(shear/0.1)
+      if (tanpsi>0.0.and..false.) then
+         write(*,*) '----------------------------------'
+         write(*,*) 'h,m,m_eqn,tanpsi',h,m,m_eqn,tanpsi
+         write(*,*) 'shear,sigbedc,sigbed',shear,sigbedc,sigbed
+      else
+         !write(*,*) 'mostly negative'
+      endif
       pm = max(0.0,pm)
       pm = min(1.0,pm)
       kperm = kappita*(1.0+ 10.0*pm)*exp(-(m-0.60)/(0.04))
@@ -291,6 +299,7 @@ contains
 
       !compress = alpha/(sigbed + 1.d5)
       compress = alpha/(m*(sigbed +  sigma_0))
+      !compress = alpha/(m*(sigbedc))
 
       if (m.le.1.d-99) then
          kperm = 0.0

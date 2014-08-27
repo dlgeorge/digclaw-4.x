@@ -87,8 +87,9 @@
             sigebar = sigebar*exp(krate*dt)
             p = rho*gmod*h + sigma_0 - sigebar
 
-            call admissibleq(h,hu,hv,hm,p,u,v,m,theta)
-            call auxeval(h,u,v,m,p,phi,theta,kappa,S,rho,tanpsi,D,tau,sigbed,kperm,compress,pm)
+            !call admissibleq(h,hu,hv,hm,p,u,v,m,theta)
+            !call auxeval(h,u,v,m,p,phi,theta,kappa,S,rho,tanpsi,D,tau,sigbed,kperm,compress,pm)
+
 
             !integrate pressure relaxation
             zeta = 3.d0/(compress*h*2.0)  + (rho-rho_f)*rho_f*gmod/(4.d0*rho)
@@ -129,7 +130,7 @@
       enddo
 
       !mollification
-      if (.false.) then !mollification ?
+      if (.true.) then !mollification ?
       if (.not.allocated(moll)) then
          allocate(moll(mx,my))
       endif
