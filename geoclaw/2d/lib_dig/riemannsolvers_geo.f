@@ -52,8 +52,10 @@ c-----------------------------------------------------------------------
       double precision hstarHLL,deldelh,drytol,gmod,geps,tausource
       double precision raremin,raremax,rare1st,rare2st,sdelta
       double precision gammaL,gammaR,theta1,theta2,theta3,vnorm
+
       logical sonic,rare1,rare2
       logical rarecorrectortest,rarecorrector
+
 
       veltol1=1.d-6
       veltol2=0.d0
@@ -131,7 +133,7 @@ c-----------------------------------------------------------------------
 
       hstarHLL = max((huL-huR+sE2*hR-sE1*hL)/(sE2-sE1),0.d0) ! middle state in an HLL solve
 c     !determine the middle entropy corrector wave------------------------
-      rarecorrectortest = .true.
+      rarecorrectortest = .false.
       rarecorrector=.false.
       if (rarecorrectortest) then
          sdelta=sw(3)-sw(1)
@@ -242,7 +244,7 @@ c     !find bounds in case of critical state resonance, or negative states
 
 *     !determine the source term
 
-      if (ixy.eq.1.and.(.not.wallprob)) then
+      if (ixy.eq.1) then
          source2dx = source2dx + dx*hbar*grav*dsin(theta)
       endif
 

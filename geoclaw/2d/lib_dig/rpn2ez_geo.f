@@ -283,7 +283,7 @@ c     &         theta,gamma,eps,dx,sw,fw,wave)
 
          call riemann_dig2_aug_sswave_ez(ixy,meqn,waves,hL,hR,huL,huR,
      &         hvL,hvR,hmL,hmR,pL,pR,bL,bR,uL,uR,vL,vR,mL,mR,
-     &         thetaL,thetaR,phi_bedL,phi_bedR,dx,sw,fw,wave,wallprob,
+     &        thetaL,thetaR,phi_bedL,phi_bedR,dx,sw,fw,wave,wallprob,
      &         taudir,chiL,chiR)
 
 
