@@ -456,7 +456,7 @@ subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux
                EtaR = min(EtaL,hR+bR)
             endif
 
-            detadx = (EtaR-EtaL)/dx - sin(theta)
+            detadx = (EtaR-EtaL)/dx - tan(theta)
 
             !---------left minmod deta/dy-------------------
             if (hTL>dry_tol) then
@@ -586,14 +586,14 @@ subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux
             else
                EtaTL = min(EtaL,hTL+bTL)
             endif
-            detadxTL = (EtaTL-EtaL)/dx -sin(theta)
+            detadxTL = (EtaTL-EtaL)/dx -tan(theta)
 
             if (hBL>dry_tol) then
                EtaBL = hBL+bBL
             else
                EtaBL = min(EtaL,hBL+bBL)
             endif
-            detadxBL = (EtaL-EtaBL)/dx -sin(theta)
+            detadxBL = (EtaL-EtaBL)/dx -tan(theta)
 
             if (detadxTL*detadxBL.gt.0.0) then
                detadxL = min(abs(detadxTL),abs(detadxBL))*sign(1.0,etaTL-etaBL)
@@ -607,14 +607,14 @@ subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux
             else
                EtaTR = min(EtaR,hTR+bTR)
             endif
-            detadxTR = (EtaTR-EtaR)/dx -sin(theta)
+            detadxTR = (EtaTR-EtaR)/dx -tan(theta)
 
             if (hBR>dry_tol) then
                EtaBR = hBR+bBR
             else
                EtaBR = min(EtaR,hBR+bBR)
             endif
-            detadxBR = (EtaR-EtaBR)/dx - sin(theta)
+            detadxBR = (EtaR-EtaBR)/dx - tan(theta)
 
             if (detadxTR*detadxBR.gt.0.0) then
                detadxR = min(abs(detadxTR),abs(detadxBR))*sign(1.0,etaTR-etaBR)
@@ -732,8 +732,8 @@ subroutine calc_pmin(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
             if (hL<=dry_tol) then
                EtaL = min(Eta,bL)
             endif
-            detadxR = (EtaR-Eta)/dx -sin(theta)
-            detadxL = (Eta-EtaL)/dx -sin(theta)
+            detadxR = (EtaR-Eta)/dx -tan(theta)
+            detadxL = (Eta-EtaL)/dx -tan(theta)
             if (detadxR*detadxL<=0.0) then
                detadx = 0.0
             elseif (abs(detadxR)>abs(detadxL)) then
