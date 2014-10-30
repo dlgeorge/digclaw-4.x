@@ -1249,10 +1249,10 @@ def printframes(plotdata=None, verbose=True):
 
     import glob
     for file in glob.glob('fort.q*'):
-        frameno = int(file[7:10])
+        frameno = int(file[6:10])
         fortfile[frameno] = file
         for figno in fignos:
-            pngfile[frameno,figno] = 'frame' + file[-4:] + 'fig%s.png' % figno
+            pngfile[frameno,figno] = 'frame' + file[-5:] + 'fig%s.png' % figno
 
     if len(fortfile) == 0:
         print '*** No fort.q files found in directory ', os.getcwd()
@@ -1506,7 +1506,7 @@ def only_most_recent(framenos,outdir='.',verbose=True):
 
     fortfile = {}
     for file in glob.glob('fort.q*'):
-        frameno = int(file[7:10])
+        frameno = int(file[6:10])
         fortfile[frameno] = file
 
     if len(fortfile) == 0:
@@ -1524,7 +1524,7 @@ def only_most_recent(framenos,outdir='.',verbose=True):
         mtime = os.path.getmtime(fortfile[frameno])
         # sometimes later fort files are closed a few seconds after
         # earlier ones, so include a possible delaytime:
-        delaytime = 5  # seconds
+        delaytime = 15  # seconds
         if mtime < mtimeprev-delaytime:
             break
         numframes = numframes + 1
