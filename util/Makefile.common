@@ -9,13 +9,13 @@
 #
 #       To make the executable, type:             make .exe
 #
-#       To make data files by running 
+#       To make data files by running
 #       setrun.py:                                make .data
 #
 #       To make and run code putting results
 #       in subdirectory named output:             make .output
 #
-#       To make and run code and then plot        
+#       To make and run code and then plot
 #       results from subdirectory output
 #       into subdirectory named plots:            make .plots
 #
@@ -37,7 +37,7 @@ FC ?= gfortran
 LINK ?= $(FC)
 
 # Flags for compiling and linking:
-FFLAGS ?=  
+FFLAGS ?=
 LFLAGS ?= $(FFLAGS)
 
 # Path to version of python to use:  May need to use something other than
@@ -56,7 +56,7 @@ CLAW_EXE ?= xclaw
 CLAW_PKG ?= classic
 CLAW_OUTDIR ?= _output
 CLAW_PLOTDIR ?= _plots
-CLAW_INCLUDE ?= 
+CLAW_INCLUDE ?= $(INCLUDE)
 CLAW_LIB ?= $(CURDIR)/
 CLAW_OVERWRITE ?= True
 CLAW_RESTART ?= False
@@ -67,8 +67,8 @@ CLAW_RESTART ?= False
 # how to make .o files from .f files:
 .SUFFIXES:
 .SUFFIXES: .f90 .f .mod .o
-%.o : %.f90 $(CLAW_INCLUDE) ; $(FC) -c -I$(CLAW_LIB) $< -o $@ $(FFLAGS)
-%.o : %.f $(CLAW_INCLUDE) ; $(FC) -c -I$(CLAW_LIB) $< -o $@ $(FFLAGS) 
+%.o : %.f90 $(CLAW_INCLUDE) ; $(FC) -c -I$(CLAW_INCLUDE) -I$(CLAW_LIB) $< -o $@ $(FFLAGS)
+%.o : %.f $(CLAW_INCLUDE) ; $(FC) -c -I$(CLAW_INCLUDE) -I$(CLAW_LIB) $< -o $@ $(FFLAGS)
 
 # make list of .o files required from the sources above:
 CLAW_OBJECTS = $(subst .f,.o, $(subst .f90,.o, $(CLAW_SOURCES)))
@@ -88,7 +88,7 @@ $(CLAW_EXE): $(CLAW_LIBOBJECTS) $(CLAW_OBJECTS) $(MAKEFILE_LIST);
 #----------------------------------------------------------------------------
 
 # Command to create *.html files from *.f etc:
-CC2HTML = $(PYTHON) $(CLAW)/doc/clawcode2html.py --force 
+CC2HTML = $(PYTHON) $(CLAW)/doc/clawcode2html.py --force
 
 # make list of html files to be created by 'make .htmls':
 HTML = \
@@ -102,18 +102,18 @@ HTML = \
   $(subst .sh,.sh.html,$(wildcard *.sh)) \
   Makefile.html
 
-# Rules to make html files:  
+# Rules to make html files:
 # e.g. qinit.f --> qinit.f.html
-%.f.html : %.f ; $(CC2HTML) $<              
+%.f.html : %.f ; $(CC2HTML) $<
 %.f95.html : %.f95 ; $(CC2HTML) $<
 %.f90.html : %.f90 ; $(CC2HTML) $<
 %.m.html : %.m ; $(CC2HTML) $<
 %.py.html : %.py ; $(CC2HTML) $<
 %.data.html : %.data ; $(CC2HTML) $<
 %.sh.html : %.sh ; $(CC2HTML) $<
-Makefile.html : Makefile ; $(CC2HTML) $<    
+Makefile.html : Makefile ; $(CC2HTML) $<
 # drop .txt extension, e.g. README.txt --> README.html
-%.html : %.txt ; $(CC2HTML) --dropext $<    
+%.html : %.txt ; $(CC2HTML) --dropext $<
 
 .htmls: $(HTML) ;
 
@@ -130,20 +130,20 @@ Makefile.html : Makefile ; $(CC2HTML) $<
 # what executable to run, e.g. xclaw or xamr.
 .output: $(CLAW_EXE) .data $(MAKEFILE_LIST);
 	@echo $(CLAW_OUTDIR) > .output
-	$(PYTHON) $(CLAW)/util/runclaw.py  $(CLAW_EXE) $(CLAW_OUTDIR) $(CLAW_OVERWRITE) $(CLAW_RESTART)
+	$(PYTHON) $(CLAW)/clawutil/src/python/runclaw.py  $(CLAW_EXE) $(CLAW_OUTDIR) $(CLAW_OVERWRITE) $(CLAW_RESTART)
 
 #----------------------------------------------------------------------------
 # Run the code without checking dependencies:
-output: 
-	$(PYTHON) $(CLAW)/util/runclaw.py  $(CLAW_EXE) $(CLAW_OUTDIR) $(CLAW_OVERWRITE) $(CLAW_RESTART)
+output:
+	$(PYTHON) $(CLAW)/clawutil/src/runclaw.py  $(CLAW_EXE) $(CLAW_OUTDIR) $(CLAW_OVERWRITE) $(CLAW_RESTART)
 
 #----------------------------------------------------------------------------
 
 # Python command to create plots:
-# Environment variable COMSPEC is only defined on Windows -- 
+# Environment variable COMSPEC is only defined on Windows --
 #   in which case assume Cygwin is being used an use Windows version of
 #   Python which should have matplotlib (e.g. via EPD)
-ifdef COMSPEC   
+ifdef COMSPEC
   PLOTCMD := C:\Python25\python.exe C:\cygwin$(CLAW)\python\pyclaw\plotters\plotclaw.py
 else
   PLOTCMD := $(PYTHON) $(CLAW)/python/pyclaw/plotters/plotclaw.py
@@ -175,13 +175,13 @@ plots:
 # Clean up options:
 
 clean:
-	-rm -f $(CLAW_OBJECTS) $(CLAW_EXE) $(HTML) 
-	-rm -f .data .output .plots .htmls 
+	-rm -f $(CLAW_OBJECTS) $(CLAW_EXE) $(HTML)
+	-rm -f .data .output .plots .htmls
 
 clobber:
 	$(MAKE) clean
 	-rm -f -r fort.*  *.pyc *.db pyclaw.log output *.so
-	-rm -f -r _plots* _output* 
+	-rm -f -r _plots* _output*
 
 #----------------------------------------------------------------------------
 
@@ -191,7 +191,7 @@ all:
 	$(MAKE) .plots
 	$(MAKE) .htmls
 
-new: 
+new:
 	-rm -f  $(CLAW_OBJECTS)
 	-rm -f  $(CLAW_LIBOBJECTS)
 	$(MAKE) .exe
@@ -201,7 +201,7 @@ regression_test: .output
 
 #----------------------------------------------------------------------------
 
-help: 
+help:
 	@echo '   "make .objs"    to compile object files'
 	@echo '   "make .exe"     to create executable'
 	@echo '   "make .data"    to create data files using setrun.py'
