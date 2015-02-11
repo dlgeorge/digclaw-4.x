@@ -303,7 +303,8 @@ contains
       else
          D = 0.d0
       endif
-      tanphi = dtan(phi_bed + datan(tanpsi))
+      
+      tanphi = dtan(phi_bed + datan(tanpsi)+0.7*pm)
       !if (S.gt.0.0) then
       !   tanphi = tanphi + 0.38*mu*shear/(shear + 0.005*sigbedc)
       !endif
