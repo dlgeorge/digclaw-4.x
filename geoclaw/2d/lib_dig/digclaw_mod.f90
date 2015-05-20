@@ -391,7 +391,7 @@ subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux
       double precision :: gmod,dry_tol
       double precision :: EtaL,Eta,EtaTL,EtaB
       double precision :: phi,rho,kappa,S,tanpsi,D,tau,sigbed,kperm,compress,pm
-      double precision :: Fx,Fy,dot,u,v,m,p,vnorm
+      double precision :: Fx,Fy,dot,u,v,m,p
 
 
       integer :: i,j
@@ -465,11 +465,11 @@ subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux
                Eta = min(EtaB,h+b)
             endif
 
-            Fx = -gmod*0.5*(h+hL)*((Eta-EtaL)/dx + sin(theta))
+            Fx = -gmod*0.5*(h+hL)*((Eta-EtaL)/dx - sin(theta))
             Fy = -gmod*0.5*(h+hB)*(Eta-EtaB)/dy
             
-            vnorm = hu**2 + hv**2 + huL**2 + huB**2 + hvL**2 + hvB**2
-            if (vnorm>0.0) then
+
+            if ((hv**2+hu**2)>0.0) then
                aux(i,j,i_taudir_x) = -hu/sqrt(hv**2+hu**2)
                aux(i,j,i_taudir_y) = -hv/sqrt(hv**2+hu**2) 
 
@@ -483,7 +483,7 @@ subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux
                   !if net force is in same direction, split friction source term
                   !splitting is useful for small velocities and nearly balanced forces
                   !only split amount up to maximum net force for large velocities
-                  aux(i,j,i_fsphi) = 0.*min(1.0,sqrt(Fx**2+Fy**2)*rho/max(tau,1.d-16))
+                  aux(i,j,i_fsphi) = min(1.0,sqrt(Fx**2+Fy**2)*rho/max(tau,1.d-16))
                else
                   !net force is in same direction as friction
                   !if nearly balanced steady state not due to friction
@@ -506,7 +506,7 @@ subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux
                endif
                
             endif 
-
+            
          enddo
       enddo
 
