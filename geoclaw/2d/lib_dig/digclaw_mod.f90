@@ -30,8 +30,8 @@ module digclaw_module
     integer, parameter ::  i_dig    = 4 !Start of digclaw aux variables
     integer, parameter ::  i_phi    = i_dig
     integer, parameter ::  i_theta  = i_dig + 1
-    integer, parameter ::  i_fs     = i_dig + 2
-    integer, parameter ::  i_fsphi  = i_dig + 3
+    integer, parameter ::  i_tau_cx     = i_dig + 2
+    integer, parameter ::  i_tau_cy   = i_dig + 3
     integer, parameter ::  i_taudir_x = i_dig + 4
     integer, parameter ::  i_taudir_y = i_dig + 5
     integer, parameter ::  DIG_PARM_UNIT = 78
@@ -382,12 +382,12 @@ contains
    !  outputs direction cosines at each interface
    ! ========================================================================
 
-subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
+subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dt,dx,dy,q,maux,aux)
 
       implicit none
 
       !Input
-      double precision :: dx,dy,xlower,ylower
+      double precision :: dt,dx,dy,xlower,ylower
       double precision :: q(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, meqn)
       double precision :: aux(1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,maux)
       integer :: maxmx,maxmy,mx,my,mbc,meqn,maux
@@ -408,7 +408,7 @@ subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux
       double precision :: thetaL,thetaB,theta
       double precision :: tau,tauL,tauR,tauB,tauT,rho,rhoL,rhoR,rhoT,rhoB
       double precision :: phi,kappa,S,tanpsi,D,sigbed,kperm,compress,pm
-      double precision :: Fx,Fy,FxL,FxR,FyL,FyR,FyC,FxC,dot,vnorm,Fproj
+      double precision :: Fx,Fy,FxL,FxR,FyL,FyR,FyC,FxC,dot,net_force,taubound
 
 
       integer :: i,j
@@ -486,7 +486,9 @@ subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux
             if ((h+hL+hB+hR+hT)<dry_tol) then
                aux(i,j,i_taudir_x) = 0.0
                aux(i,j,i_taudir_y) = 0.0
-               aux(i,j,i_fsphi) = 0.0
+               aux(i,j,i_tau_cx) = 1.0
+               aux(i,j,i_tau_cy) = 1.0
+               
                cycle
             endif
 
@@ -536,182 +538,28 @@ subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux
             else
                Fy = 0.0
             endif
-            
-            vnorm = sqrt(hu**2 + hv**2)
-            if (vnorm>0.0) then
-               aux(i,j,i_taudir_x) = -hu/sqrt(hv**2+hu**2)
-               aux(i,j,i_taudir_y) = -hv/sqrt(hv**2+hu**2) 
-               
-               dot = min(max(0.0,Fx*hu) , max(0.0,Fy*hv))
-               if (dot>0.0) then
-                  !friction should oppose direction of velocity
-                  !if net force is in same direction, split friction source term
-                  !splitting is useful for small velocities and nearly balanced forces
-                  !only split amount up to maximum net force for large velocities
-                  !aux has cell centered interpretation in Riemann solver
-                  Fproj = dot/vnorm
-                  aux(i,j,i_fsphi) = min(1.0,Fproj*rho/max(tau,1.d-16))
-               else
-                  !net force is in same direction as friction
-                  !if nearly balanced steady state not due to friction
-                  !no splitting, integrate friction in src
-                  aux(i,j,i_fsphi) = 0.0
-               endif
-               
 
-            else 
-               !aux now have cell edge interpretation in Riemann solver
-               !friction should oppose net force. resolve in Riemann solver
-               if ((FxL**2+Fy**2)>0.0) then
-                  aux(i,j,i_taudir_x) = -FxL/sqrt(FxL**2+Fy**2)
-               else
-                  aux(i,j,i_taudir_x) = 1.0
-               endif
+            net_force = sqrt((FxC + hu/dt)**2 + (FyC + hv/dt)**2)
+            taubound = min(1.0,rho*net_force/max(tau,1.d-16))
 
-               if ((Fx**2+FyL**2)>0.0) then
-                  aux(i,j,i_taudir_y) = -FyL/sqrt(Fx**2+FyL**2) 
-               else
-                  !there is no motion or net force. resolve in src after Riemann 
-                  aux(i,j,i_taudir_y) = 1.0
-               endif
-
-               if ((aux(i,j,i_taudir_y)**2 + aux(i,j,i_taudir_x)**2)>0.0) then
-                  aux(i,j,i_fsphi) = 1.0
-               else
-                  aux(i,j,i_fsphi) = 0.0
-               endif               
+            if (net_force>0.0) then
+               aux(i,j,i_tau_cx) = - taubound*hu/net_force 
+               aux(i,j,i_tau_cy) = - taubound*hv/net_force 
+               aux(i,j,i_taudir_x) = -taubound*FxL/net_force
+               aux(i,j,i_taudir_y) = -taubound*FyL/net_force
+            else
+               aux(i,j,i_tau_cx) = 0.0
+               aux(i,j,i_tau_cy) = 0.0
+               aux(i,j,i_taudir_x) = 0.0
+               aux(i,j,i_taudir_y) = 0.0
             endif 
+            
 
          enddo
       enddo
 
 end subroutine calc_taudir
 
-   ! ========================================================================
-   !  calc_tausplit
-   ! ========================================================================
-   !  Determines splitting of tau for rp vs. src.
-   ! ========================================================================
-
-subroutine calc_tausplit(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
-
-
-      implicit none
-
-      !Input
-      double precision :: dx,dy,xlower,ylower
-      double precision :: q(1-mbc:maxmx+mbc, 1-mbc:maxmy+mbc, meqn)
-      double precision :: aux(1-mbc:maxmx+mbc,1-mbc:maxmy+mbc,maux)
-      integer :: maxmx,maxmy,mx,my,mbc,meqn,maux
-
-      !Locals
-      double precision :: h,hL,hR,hu,hv,hm,p,b,bL,bR,bT,bB,hT,hB,u,v,m
-      double precision :: phi,theta,rho,kappa,S,tanpsi,D,tau,sigbed,kperm,compress,pm
-      double precision :: gmod,dry_tol
-      double precision :: EtaL,EtaR,EtaT,EtaB,Eta
-      double precision :: detadx,detadxL,detadxR,detady,detadyT,detadyB
-      double precision :: grad_eta
-
-
-      integer :: i,j
-
-      dry_tol = drytolerance
-      gmod = grav
-      rho = m0*rho_s + (1.0-m0)*rho_f
-
-      do i=2-mbc,mx+mbc-1
-         do j=2-mbc,my+mbc-1
-
-            h = q(i,j,1)
-            hL = q(i-1,j,1)
-            hR = q(i+1,j,1)
-            if (h<dry_tol) then
-               aux(i,j,i_fsphi) = 1.0
-               cycle
-            endif
-
-            hu = q(i,j,2)
-            hv = q(i,j,3)
-            hm = q(i,j,4)
-            p  = q(i,j,5)
-
-            if ((hu**2 + hv**2)==0.0) then
-               aux(i,j,i_fsphi) = 1.0
-               !cycle
-            endif
-
-            b = aux(i,j,1)
-            bR = aux(i+1,j,1)
-            bL = aux(i-1,j,1)
-            phi = aux(i,j,i_phi)
-
-            hT = q(i,j+1,1)
-            bT = aux(i,j+1,1)
-            hB = q(i,j-1,1)
-            bB = aux(i,j-1,1)
-
-            if (bed_normal.eq.1) then
-               theta = aux(i,j,i_theta)
-               gmod = grav*cos(theta)
-            else
-               theta = 0.d0
-            endif
-
-            Eta  = h+b
-            !---------max deta/dx-------------------
-            EtaR = hR+bR
-            EtaL = hL+bL
-            if (hR<=dry_tol) then
-               EtaR = min(Eta,bR)
-            endif
-            if (hL<=dry_tol) then
-               EtaL = min(Eta,bL)
-            endif
-            detadxR = (EtaR-Eta)/dx -tan(theta)
-            detadxL = (Eta-EtaL)/dx -tan(theta)
-            if (detadxR*detadxL<=0.0) then
-               detadx = 0.0
-            elseif (abs(detadxR)>abs(detadxL)) then
-               detadx = detadxL
-            else
-               detadx = detadxR
-            endif
-
-
-            !---------max deta/dy-------------------
-            EtaT = hT+bT
-            EtaB = hB+bB
-            if (hT<=dry_tol) then
-               EtaT = min(Eta,bT)
-            endif
-            if (hB<=dry_tol) then
-               EtaB = min(Eta,bB)
-            endif
-            detadyT = (EtaT-Eta)/dy
-            detadyB = (Eta-EtaB)/dy
-            if (detadyT*detadyB<=0.0) then
-               detady = 0.0
-            elseif (abs(detadyT)>abs(detadyB)) then
-               detady = detadyB
-            else
-               detady = detadyT
-            endif
-
-            grad_eta = sqrt(detadx**2 + detady**2)
-
-            call admissibleq(h,hu,hv,hm,p,u,v,m,theta)
-            pm = q(i,j,6)/q(i,j,1)
-            call auxeval(h,u,v,m,p,phi,theta,kappa,S,rho,tanpsi,D,tau,sigbed,kperm,compress,pm)
-
-            if (tau>0.0) then
-               aux(i,j,i_fsphi) = min(1.0,grad_eta*rho*gmod*h/tau)
-            else
-               aux(i,j,i_fsphi) = 1.0
-            endif
-         enddo
-      enddo
-
-   end subroutine calc_tausplit
 
    ! ========================================================================
    !  calc_pmin
@@ -753,7 +601,7 @@ subroutine calc_pmin(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
             hL = q(i-1,j,1)
             hR = q(i+1,j,1)
             if (h<dry_tol) then
-               aux(i,j,i_fs) = 10.0
+               !aux(i,j,i_fs) = 10.0
                cycle
             endif
 
@@ -761,7 +609,7 @@ subroutine calc_pmin(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
             hv = q(i,j,3)
 
             if ((hu**2+hv**2)>0.0) then
-               aux(i,j,i_fs) = 0.0
+               !aux(i,j,i_fs) = 0.0
                cycle
             endif
 
@@ -771,7 +619,7 @@ subroutine calc_pmin(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
             phi = aux(i,j,i_phi)
 
             if ((phi)==0.0) then
-               aux(i,j,i_fs) = 0.0
+               !aux(i,j,i_fs) = 0.0
                init_pmin_ratio = 0.0
                cycle
             endif
@@ -837,9 +685,9 @@ subroutine calc_pmin(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
             init_pmin_ratio = min(init_pmin_ratio, 1.0-grad_eta/tan(phi))
 
             if (grad_eta>0.0) then
-               aux(i,j,i_fs) = tan(phi)/grad_eta
+               !aux(i,j,i_fs) = tan(phi)/grad_eta
             else
-               aux(i,j,i_fs) = 10.0
+               !aux(i,j,i_fs) = 10.0
             endif
          enddo
       enddo

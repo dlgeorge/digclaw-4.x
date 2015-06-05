@@ -178,8 +178,8 @@ c=============== Pressure initialization for Mobilization Modeling======
       !write(*,*) 'qinit:init,dx,dy:',init_pmin_ratio,dx,dy
 
 c===============set factor of safety====================================
-      call calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dx,dy,
-     &                     q,maux,aux)
+      call calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,1.0,
+     &                    dx,dy,q,maux,aux)
 
       return
       end

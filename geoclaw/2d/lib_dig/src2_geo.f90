@@ -18,8 +18,8 @@
       double precision :: gmod,h,hu,hv,hm,u,v,m,p,phi,kappa,S,rho,tanpsi,dti
       double precision :: D,tau,sigbed,kperm,compress,pm,coeff,tol
       double precision :: zeta,p_hydro,p_litho,p_eq,krate,gamma,dgamma
-      double precision :: vnorm,hvnorm,theta,dtheta,w,taucf,fsphi,hvnorm0
-      double precision :: shear,sigebar
+      double precision :: vnorm,hvnorm,theta,dtheta,w,taucf,fs_cx,fs_cy,hvnorm0
+      double precision :: shear,sigebar,prevfric,Fc,Gc
       double precision :: b_xx,b_yy,b_xy,chi,beta
       integer :: i,j,ii,jj,jjend,icount,curvature
 
@@ -55,7 +55,15 @@
             pm = q(i,j,6)/h
             pm = max(0.0,pm)
             pm = min(1.0,pm)
-            fsphi = aux(i,j,i_fsphi)
+
+            fs_cx = aux(i,j,i_tau_cx)
+            fs_cy = aux(i,j,i_tau_cy)
+            prevfric = 0.0
+            if ((fs_cx**2 + fs_cy**2)==0.0) then
+               Fc = 0.5*(aux(i,j,i_taudir_x)+aux(i+1,j,i_taudir_x))
+               Gc = 0.5*(aux(i,j,i_taudir_y)+aux(i,j+1,i_taudir_y))
+               prevfric = 1.0 - Fc**2 - Gc**2
+            endif
 
             jjend = 1
             dti = dt/real(jjend,kind=8)
@@ -65,17 +73,22 @@
             !integrate momentum source term
             call auxeval(h,u,v,m,p,phi,theta,kappa,S,rho,tanpsi,D,tau,sigbed,kperm,compress,pm)
 
-            !tau = max(tau*(1.0-fsphi),0.0)
+            if (prevfric==0.0) then
+               hu = hu + dti*fs_cx*tau/rho
+               hv = hv + dti*fs_cx*tau/rho
+            endif
+            !integrate other friction
 
             vnorm = sqrt(u**2.0 + v**2.0)
             hvnorm = sqrt(hu**2.0 + hv**2.0)
             hvnorm0 = hvnorm
-
-            !integrate friction
-            hvnorm = dmax1(0.d0,hvnorm - dti*tau/rho)
+            
+            if ((prevfric>0.0).and.(vnorm>0.0)) then
+               hvnorm = max(0.0,hvnorm-dti*sqrt(prevfric)*tau/rho)
+            endif
+            
             hvnorm = hvnorm*exp(-(1.d0-m)*2.0*mu*dti/(rho*h**2.0))
             if (hvnorm<1.e-16) hvnorm = 0.0
-
 
             if (hvnorm>0.0.and.curvature==1) then
                b_xx=(aux(i+1,j,1)-2.d0*aux(i,j,1)+aux(i-1,j,1))/(dx**2)

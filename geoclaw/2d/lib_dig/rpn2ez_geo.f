@@ -126,8 +126,8 @@ c        !set normal direction
             taudirL = auxr(i-1,i_taudir_y)
          endif
 
-         fsL = auxr(i-1,i_fsphi)
-         fsR = auxl(i,i_fsphi)
+         fsL = 1.0 !auxr(i-1,i_fsphi)
+         fsR = 1.0 !auxl(i,i_fsphi)
 
          if (bed_normal.eq.1) then
             thetaL = auxr(i-1,i_theta)
