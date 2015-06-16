@@ -488,7 +488,6 @@ subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dt,dx,dy,q,maux,
                aux(i,j,i_taudir_y) = 0.0
                aux(i,j,i_tau_cx) = 1.0
                aux(i,j,i_tau_cy) = 1.0
-               
                cycle
             endif
 
@@ -540,11 +539,12 @@ subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dt,dx,dy,q,maux,
             endif
 
             net_force = sqrt((FxC + hu/dt)**2 + (FyC + hv/dt)**2)
-            taubound = min(1.0,rho*net_force/max(tau,1.d-16))
+            taubound = (1./sqrt(2.0))*min(1.0,rho*net_force/max(tau,1.d-16))
+            net_force = sqrt((FxC + hu/dt)**2 + (FyC + hv/dt)**2)
 
             if (net_force>0.0) then
-               aux(i,j,i_tau_cx) = - taubound*hu/net_force 
-               aux(i,j,i_tau_cy) = - taubound*hv/net_force 
+               aux(i,j,i_tau_cx) = -taubound*(hu/dt)/net_force 
+               aux(i,j,i_tau_cy) = -taubound*(hv/dt)/net_force 
                aux(i,j,i_taudir_x) = -taubound*FxL/net_force
                aux(i,j,i_taudir_y) = -taubound*FyL/net_force
             else
@@ -553,7 +553,8 @@ subroutine calc_taudir(maxmx,maxmy,meqn,mbc,mx,my,xlower,ylower,dt,dx,dy,q,maux,
                aux(i,j,i_taudir_x) = 0.0
                aux(i,j,i_taudir_y) = 0.0
             endif 
-            
+            write(*,*) 'Fx,Fy:', aux(i,j,i_taudir_x), aux(i,j,i_taudir_y)
+            write(*,*) 'ux,uy:', aux(i,j,i_tau_cx), aux(i,j,i_tau_cy)
 
          enddo
       enddo
