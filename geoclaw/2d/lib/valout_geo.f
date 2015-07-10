@@ -80,7 +80,7 @@ c  old        ycorn = rnode(cornylo,mptr) - .5d0*hyposs(level)
          enddo
          write(matunit1,*) ' '
       enddo
-  109       format(4e26.16)
+  109       format(9e26.16)
 
 
             mptr = node(levelptr, mptr)
